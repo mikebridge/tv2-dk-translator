@@ -6,6 +6,10 @@
   "action": {
     "default_popup": "index.html"
   },
+  "background": {
+    "service_worker": "assets/background.js",
+    "type": "module"
+  },
   "permissions": [
     "scripting",
     "tabs",
@@ -17,8 +21,9 @@
   ],
   "content_scripts": [
     {
-      "matches": ["https://www.youtube.com/*"],
-      "js": ["content.js"]
+      "matches": ["<all_urls>"],
+      "js": ["assets/content.js"],
+      "type": "module"
     }
   ]
 }
