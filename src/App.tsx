@@ -1,22 +1,22 @@
-import { useState } from 'react'
 import './App.css'
 import Toggle from "./lib/toggle";
 import ApiKeyInput from "./lib/apikey";
+import {useApiKey} from "./lib/useApiKey";
 
 function App() {
-  const [count, setCount] = useState(0)
+  // undefined = waiting, null = not set, string = set
+  const { apiKey, handleApiKeyChange } = useApiKey();
 
   return (
     <div className="h-full">
       <h1 className="text-3xl font-bold">
-        Hello, world! wefwefwefwefwefwefwefew
+
       </h1>
       <div>
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <Toggle />
-        <ApiKeyInput />
+        Active: <Toggle />
+        {apiKey !== undefined &&
+          <ApiKeyInput apiKey={apiKey || ""} onApiKeyChange={handleApiKeyChange}/>
+        }
       </div>
     </div>
   )

@@ -13,11 +13,12 @@
   "permissions": [
     "scripting",
     "tabs",
-    "activeTab"
+    "activeTab",
+    "storage"
   ],
   "host_permissions": [
-    "https://*/*",
-    "http://*/*"
+    "https://play.tv2.dk/*",
+    "http://play.tv2.dk/*"
   ],
   "content_scripts": [
     {

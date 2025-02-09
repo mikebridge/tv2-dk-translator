@@ -1,4 +1,22 @@
-# React + TypeScript + Vite
+# TV2.Dk Subtitle Translator
+
+## Setup
+
+```sh
+npm install
+```
+
+## Build
+
+```sh
+npm run build:watch
+```
+
+```sh
+npm run build:watch
+````
+
+## Vite: Appendix
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
