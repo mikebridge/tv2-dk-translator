@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import {createGetApiKeyRequest, createSetApiKeyRequest, isGetApiKeyResponse} from "./common/messages";
+import {createGetApiKeyRequest, createSetApiKeyRequest, isGetApiKeyResponse} from "../common/messages";
 
 const retrieveApiKey = async (): Promise<string | undefined> => {
   console.log("calling retrieveApiKey");
