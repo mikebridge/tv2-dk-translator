@@ -62,11 +62,15 @@ export const initializeStorageListener = () => {
       return false;
     }
     if (isSetKeyValueSyncRequest(message)) {
+      console.log("SETTING VALUE");
+      console.log(message);
       setValueInSyncStorage(message.data.key, message.data.value);
       return false;
     }
     if (isGetKeyValueSyncRequest(message)) {
-      getValueFromLocalStorage(message.data.key).then((value) =>
+      console.log("GETTING VALUE");
+      console.log(message);
+      getValueFromSyncStorage(message.data.key).then((value) =>
         sendResponse(createGetKeyValueSyncResponse(message.data.key, value)))
       return true;
     }

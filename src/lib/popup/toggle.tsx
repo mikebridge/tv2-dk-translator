@@ -1,15 +1,29 @@
-'use client'
+import { useState, useEffect } from 'react';
+import { Switch } from '@headlessui/react';
 
-import { useState } from 'react'
-import { Switch } from '@headlessui/react'
+interface ToggleProps {
+  initialValue: boolean
+  onToggle: (enabled: boolean) => void
+}
 
-export default function Toggle() {
-  const [enabled, setEnabled] = useState(false)
+export default function Toggle({ initialValue = false, onToggle }: ToggleProps) {
+  const [enabled, setEnabled] = useState(initialValue);
+
+  useEffect(() => {
+    setEnabled(initialValue);
+  }, [initialValue]);
+
+  const handleChange = (newValue: boolean) => {
+    setEnabled(newValue);
+    if (onToggle) {
+      onToggle(newValue);
+    }
+  };
 
   return (
     <Switch
       checked={enabled}
-      onChange={setEnabled}
+      onChange={handleChange}
       className={`group relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
         enabled ? "bg-red-500" : "bg-gray-200"
       } focus:ring-2 focus:ring-red-500 focus:ring-offset-2`}
@@ -22,6 +36,5 @@ export default function Toggle() {
         }`}
       />
     </Switch>
-
-  )
+  );
 }

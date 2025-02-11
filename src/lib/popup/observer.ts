@@ -1,12 +1,18 @@
-// I can't seem to import from messages.ts, so in the meantime I am copying it here.
-// const SUBTITLE_TRANSLATED = "subtitleTranslated";
-// const SUBTITLE_ADDED_TO_DOM = "subtitleAddedToDOM";
+// THe common files are being excluded from the bundle for some reason.
+// until I can figure that out, they are copied here.
+// import {TRANSLATION_REQUEST, TRANSLATION_RESPONSE} from "../common/events";
+//import {TRANSLATION_REQUEST, TRANSLATION_RESPONSE} from "../common/events";
 
-// coming from backend
+//import { createTranslationRequest, isTranslationResponse } from "../common/messages";
 
+//console.log("FOUND " + tmp);
+/* =============== START IMPORT WORKAROUNDS  ====================== */
+
+/* COPIED FROM events.ts **/
 const TRANSLATION_RESPONSE = "translationResponse";
 const TRANSLATION_REQUEST = "translationRequest";
-// const SUBTITLE_ADDED_TO_DOM = "subtitleAddedToDOM";
+
+/* COPIED FROM messages.ts */
 
 interface TranslationRequestData {
   text: string
@@ -34,9 +40,11 @@ export const createTranslationRequest = (text: string): TranslationRequest => ({
   }
 })
 
-export const isTransactionResponse = (msg: any): msg is TranslationResponse => {
+export const isTranslationResponse = (msg: any): msg is TranslationResponse => {
   return msg && msg.action === TRANSLATION_RESPONSE;
 }
+
+/* =============== END IMPORT WORKAROUNDS  ====================== */
 
 const formatSubtitle = (text: string) => {
   // split the sentence into lines with a maximum of 40 chars per line
@@ -60,41 +68,73 @@ const formatSubtitle = (text: string) => {
   // return text.replace(/\n/g, '<br />');
 }
 
+// create an html element based on this
+const createDualSubtitlesHTML = (translated: string, original: string) => {
+  const html = `
+        <div classname="theoplayer-ttml-texttrack-Dual">
+          <div id="english">
+            <p style="font-family: inherit; color: inherit; text-align: center; padding: 0px; margin: 0px; line-height: inherit;">
+              <span style="color: rgb(255, 255, 0); background-color: rgba(0, 0, 0, 0.25); padding-right: 0.5em; padding-left: 0.5em;">
+                ${translated}
+              </span>
+            </p>
+          </div>
+          <div id="danish">
+            <p style="font-family: inherit; color: inherit; text-align: center; padding: 0px; margin: 0px; line-height: inherit;">
+              <span style="color: rgb(255, 255, 255); background-color: rgba(0, 0, 0, 0.25); padding-right: 0.5em; padding-left: 0.5em;">
+                ${original}
+              </span>
+            </p>
+          </div>
+        </div>
+    `;
+  return html;
+}
 
-const displayTranslatedElement = (translated: string) => {
-  console.log('displaying translated text')
+const displayTranslatedElement = (translated: string, original: string) =>  {
   const translatedAsHtml = formatSubtitle(translated);
+  const originalAsHtml = formatSubtitle(original);
 
-  const el = document.querySelector<HTMLDivElement>('.theoplayer-ttml-texttrack-Dansk #translated');
-  if (el) {
-    console.log('found existing')
-    console.log(translated);
-    // put a br in where there's a newline
-    el.innerHTML = translatedAsHtml
+  const textTracksContainer = document.querySelector('.theoplayer-texttracks');
+
+  if (textTracksContainer) {
+    // Generate the HTML using the template function
+    const subtitlesHTML = createDualSubtitlesHTML(translatedAsHtml, originalAsHtml);
+
+    // Replace the content of the theoplayer-texttracks element
+    textTracksContainer.innerHTML = `<div id="dual-subtitles-container">${subtitlesHTML}</div>`;
+
   } else {
-    console.log('creating new element')
-    // append the translation
-    const origEl = document.querySelector('.theoplayer-ttml-texttrack-Dansk #r0');
-    // clone it and append it as a sibling
-    if (origEl) {
-      const newEl = origEl.cloneNode(true) as Element;
-      newEl.setAttribute('id', 'translated');
-      newEl.textContent = translatedAsHtml;
-      // append as a sibling to el
-      console.log("APPENDING ELEMENT");
-      origEl.parentElement?.appendChild(newEl);
-    }
+    console.error("Could not find .theoplayer-texttracks element");
   }
 }
 
+
+// const displayTranslatedElementOrig = (translated: string, original: string) => {
+//   const translatedAsHtml = formatSubtitle(translated);
+//   const originalAsHtml = formatSubtitle(original);
+//   const el = document.querySelector<HTMLDivElement>('.theoplayer-texttracks');
+//   const newHtml = createDualSubtitlesHTML(translatedAsHtml, originalAsHtml);
+//   if (el) {
+//     const subtitlesContainer = document.createElement('div');
+//     subtitlesContainer.id = 'dual-subtitles-container';
+//     subtitlesContainer.innerHTML = newHtml; // Set the HTML content
+//
+//     // Replace the content of the theoplayer-texttracks element
+//     el.innerHTML = '';  // Clear existing content
+//     el.appendChild(subtitlesContainer); // Add the new subtitles  } else {
+//   } else {
+//     console.log("element not found")
+//   }
+// }
 
 const translationHandler = (response: unknown) => {
   console.log("translationHandler: Received translation from background script:");
   console.dir(response)
   // const subtitleElement = document.querySelector('.theoplayer-ttml-texttrack-Dansk #r0');
   //if (subtitleElement) {
-    if (isTransactionResponse(response)) {
-      displayTranslatedElement(response.data.text);
+    if (isTranslationResponse(response)) {
+      displayTranslatedElement(response.data.text, response.data.original);
       // replace the text content of the subtitle element with the new text
       // add an attribute to the span element to indicate that it has been translated
       //const spanElement = subtitleElement.querySelector('span');
@@ -120,6 +160,18 @@ const findAddedText = (el: Element, mutation: MutationRecord) => {
   }
 }
 
+export const toggleOriginalSubtitleVisibility = (show: boolean): void => {
+  // Find all elements with id "r0" that are descendants of elements with class "theoplayer-texttracks"
+  const r0Elements = document.querySelectorAll('.theoplayer-texttracks #r0');
+
+  r0Elements.forEach(element => {
+    // Set the display style based on the 'show' parameter
+    (element as HTMLElement).style.display = show ? 'flex' : 'none'; // Or 'block' depending on the original display
+  });
+};
+
+
+
 /**
  * Attach a listener that listens for new subtitles added to the dom
  */
@@ -131,6 +183,18 @@ export const connectToTextTrack = () => {
   const observer = new MutationObserver((mutationsList) => {
     const subtitleElement = document.querySelector('.theoplayer-ttml-texttrack-Dansk #r0');
     if (subtitleElement) {
+      // TODO: extract this
+      // hide the element
+      const originalStyle = subtitleElement.getAttribute('style');
+
+      // Modify the display property
+      let newStyle = originalStyle;
+      if (newStyle?.includes('display: flex')) {
+        newStyle = newStyle.replace('display: flex', 'display: none');
+        subtitleElement.setAttribute('style', newStyle);
+      }
+
+      // now translate it
       mutationsList.forEach(async (mutation) => {
         // console.dir(mutation);
         const addedText = findAddedText(subtitleElement, mutation);
@@ -141,17 +205,9 @@ export const connectToTextTrack = () => {
           const msg = createTranslationRequest(addedText);
           console.dir(msg)
           chrome.runtime.sendMessage(msg, translationHandler);
-          // chrome.runtime.sendMessage(msg, (response) => {
-          //   if (chrome.runtime.lastError) {
-          //     console.error("Message sending error:", chrome.runtime.lastError);
-          //     return;
-          //   }
-          //
-          //   console.log("FAKE TRANSLATION LISTENER HEARS")
-          //   console.dir(response)
-          // });
         }
       });
+
     }
   });
   observer.observe(document.body, {childList: true, subtree: true});

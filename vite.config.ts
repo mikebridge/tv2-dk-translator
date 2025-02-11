@@ -14,8 +14,13 @@ export default defineConfig({
       },
       output: {
         format: 'esm',
-        entryFileNames: 'assets/[name].js'
+        entryFileNames: 'assets/[name].js',
+        assetFileNames: 'assets/[name].[ext]'
       }
     }
-  }
+  },
+  optimizeDeps: {
+    include: ['common/events', 'common/messages']
+  },
+  publicDir: 'public',
 })

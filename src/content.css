@@ -1,0 +1,47 @@
+/* General adjustments to the .theoplayer-texttracks container to ensure correct stacking and layering */
+.theoplayer-texttracks {
+    z-index: 6 !important; /* Ensure our subtitles are on top. Use !important if needed to override existing styles */
+}
+
+#dual-subtitles-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 5%; /* Adjust this value to fine-tune vertical placement */
+    box-sizing: border-box;
+}
+
+/* Styles for the dual subtitle container */
+.theoplayer-ttml-texttrack-Dual {
+    width: 100%;
+    text-align: center;
+    pointer-events: none; /* Prevent subtitles from interfering with video controls */
+    box-sizing: border-box;
+}
+
+/* Styles for each language container */
+#english,
+#danish {
+    margin: 0.25em 0;
+}
+
+/* Style for the text inside the subtitles */
+#english span,
+#danish span {
+    color: rgb(255, 255, 0);
+    background-color: rgba(0, 0, 0, 0.25);
+    padding: 0.25em 0.5em;
+    border-radius: 0.2em;
+    box-decoration-break: clone;
+}
+
+/* Style for the subtitles line breaks */
+br {
+    display: block;
+    margin-bottom: 0.5em; /* Adjust space between lines */
+}

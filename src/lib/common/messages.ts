@@ -1,10 +1,10 @@
 import {
   GET_CHATGPT_API_KEY_REQUEST,
   GET_CHATGPT_API_KEY_RESPONSE,
-  SET_CHATGPT_API_KEY_REQUEST,
-  SET_KEY_VALUE_SYNC_REQUEST,
   GET_KEY_VALUE_SYNC_REQUEST,
   GET_KEY_VALUE_SYNC_RESPONSE,
+  SET_CHATGPT_API_KEY_REQUEST,
+  SET_KEY_VALUE_SYNC_REQUEST,
   TRANSLATION_REQUEST,
   TRANSLATION_RESPONSE
 } from "./events";
@@ -117,17 +117,17 @@ interface GetKeyValueSyncResponseData<T> {
 }
 
 export interface SetKeyValueSyncRequest<T> extends Event<SetKeyValueSyncRequestData<T>> {
-  action: typeof SET_CHATGPT_API_KEY_REQUEST,
+  action: typeof SET_KEY_VALUE_SYNC_REQUEST,
   data: SetKeyValueSyncRequestData<T>
 }
 
 export interface GetKeyValueSyncRequest extends Event<GetKeyValueSyncRequestData> {
-  action: typeof GET_CHATGPT_API_KEY_REQUEST,
+  action: typeof GET_KEY_VALUE_SYNC_REQUEST,
   data: GetKeyValueSyncRequestData
 }
 
 export interface GetKeyValueSyncResponse<T> extends Event<GetKeyValueSyncResponseData<T>> {
-  action: typeof GET_CHATGPT_API_KEY_RESPONSE,
+  action: typeof GET_KEY_VALUE_SYNC_RESPONSE,
   data: GetKeyValueSyncResponseData<T>
 }
 
@@ -181,7 +181,7 @@ export const createSetApiKeyRequest = (value: string | undefined): SetApiKeyRequ
  */
 export const createSetKeyValueSyncRequest = <T>(key: string, value: T | undefined): SetKeyValueSyncRequest<T> => {
   return {
-    action: SET_CHATGPT_API_KEY_REQUEST,
+    action: SET_KEY_VALUE_SYNC_REQUEST,
     data: { key, value }
   }
 }
@@ -193,7 +193,7 @@ export const createSetKeyValueSyncRequest = <T>(key: string, value: T | undefine
  */
 export const createGetKeyValueSyncRequest = (key: string): GetKeyValueSyncRequest => {
   return {
-    action: GET_CHATGPT_API_KEY_REQUEST,
+    action: GET_KEY_VALUE_SYNC_REQUEST,
     data: { key }
   }
 }
@@ -205,7 +205,7 @@ export const createGetKeyValueSyncRequest = (key: string): GetKeyValueSyncReques
  */
 export const createGetKeyValueSyncResponse = <T>(key: string, value: T | undefined): GetKeyValueSyncResponse<T> => {
   return {
-    action: GET_CHATGPT_API_KEY_RESPONSE,
+    action: GET_KEY_VALUE_SYNC_RESPONSE,
     data: { key, value }
   }
 }

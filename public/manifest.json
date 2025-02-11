@@ -24,7 +24,15 @@
     {
       "matches": ["<all_urls>"],
       "js": ["assets/content.js"],
-      "type": "module"
+      "css": ["assets/content.css"],
+      "run_at": "document_end",
+      "type": "module "
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/content.css"],
+      "matches": ["<all_urls>"]
     }
   ]
 }

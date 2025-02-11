@@ -8,4 +8,4 @@ export const GET_KEY_VALUE_SYNC_RESPONSE = "getKeyValueSyncResponse";
 export const TRANSLATION_REQUEST = "translationRequest";
 export const TRANSLATION_RESPONSE = "translationResponse";
 
-export const SUBTITLE_ADDED_TO_DOM = "subtitleAddedToDOM";
+// export const SUBTITLE_ADDED_TO_DOM = "subtitleAddedToDOM";
