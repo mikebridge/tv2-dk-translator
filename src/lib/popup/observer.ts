@@ -48,23 +48,25 @@ export const isTranslationResponse = (msg: any): msg is TranslationResponse => {
 
 const formatSubtitle = (text: string) => {
   // split the sentence into lines with a maximum of 40 chars per line
-  const MAX_CHARS = 30
-  const textWithLineBreaks = text.split('\n').map((line) => {
-    const words = line.split(' ');
-    const lines = [];
-    let currentLine = '';
-    for (const word of words) {
-      if (currentLine.length + word.length + 1 < MAX_CHARS) {
-        currentLine += word + ' ';
-      } else {
-        lines.push(currentLine);
-        currentLine = word + ' ';
-      }
-    }
-    lines.push(currentLine);
-    return lines.join('<br />\n');
-  })
-  return textWithLineBreaks.join(' ');
+  // const MAX_CHARS = 30
+  // const textWithLineBreaks = text.split('\n').map((line) => {
+  //   const words = line.split(' ');
+  //   const lines = [];
+  //   let currentLine = '';
+  //   for (const word of words) {
+  //     if (currentLine.length + word.length + 1 < MAX_CHARS) {
+  //       currentLine += word + ' ';
+  //     } else {
+  //       lines.push(currentLine);
+  //       currentLine = word + ' ';
+  //     }
+  //   }
+  //   lines.push(currentLine);
+    // substitute the line breaks  in text with a br
+    return text?.replace(/\n/g, ' <br />\n');
+    //return lines.join('<br />\n');
+
+  //return textWithLineBreaks.join(' ');
   // return text.replace(/\n/g, '<br />');
 }
 
@@ -109,25 +111,6 @@ const displayTranslatedElement = (translated: string, original: string) =>  {
   }
 }
 
-
-// const displayTranslatedElementOrig = (translated: string, original: string) => {
-//   const translatedAsHtml = formatSubtitle(translated);
-//   const originalAsHtml = formatSubtitle(original);
-//   const el = document.querySelector<HTMLDivElement>('.theoplayer-texttracks');
-//   const newHtml = createDualSubtitlesHTML(translatedAsHtml, originalAsHtml);
-//   if (el) {
-//     const subtitlesContainer = document.createElement('div');
-//     subtitlesContainer.id = 'dual-subtitles-container';
-//     subtitlesContainer.innerHTML = newHtml; // Set the HTML content
-//
-//     // Replace the content of the theoplayer-texttracks element
-//     el.innerHTML = '';  // Clear existing content
-//     el.appendChild(subtitlesContainer); // Add the new subtitles  } else {
-//   } else {
-//     console.log("element not found")
-//   }
-// }
-
 const translationHandler = (response: unknown) => {
   console.log("translationHandler: Received translation from background script:");
   console.dir(response)
@@ -154,7 +137,11 @@ const findAddedText = (el: Element, mutation: MutationRecord) => {
 
       const spanElement = el.querySelector('span');
       if (spanElement) {
-        return spanElement.innerText.trim();
+        // return spanElement.innerText.trim();
+        const htmlContent = spanElement.innerHTML;
+        const textWithNewlines = htmlContent.replace(/<br\s*\/?>/gi, '\n');
+        return textWithNewlines.trim();
+
       }
     }
   }
