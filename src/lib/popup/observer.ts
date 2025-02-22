@@ -70,7 +70,6 @@ export const isTranslationResponse = (msg: unknown): msg is TranslationResponse 
 }
 
 export const isClearTranslationRequest = (msg: unknown): msg is ClearTranslationRequest => {
-  // return msg && msg.action === CLEAR_TRANSLATION_REQUEST;
   return !!msg && typeof msg === 'object' && 'action' in msg && msg['action'] === CLEAR_TRANSLATION_REQUEST;
 }
 
@@ -148,14 +147,6 @@ const displayTranslatedElement = (translated: string, original: string, randomId
     console.error("Could not find .theoplayer-texttracks element");
   }
 }
-
-// const clearTranslatedElement = () => {
-//   const textTracksContainer = document.querySelector('.theoplayer-texttracks');
-//   if (textTracksContainer) {
-//     console.log('setting innerHTML to empty');
-//     textTracksContainer.innerHTML = '';
-//   }
-// }
 
 /**
  * clear the translated element

@@ -1,4 +1,5 @@
 import {getOpenAiApiKeyFromLocalStorage} from "./storageListener";
+import {formatResult} from "./text";
 
 const OPENAPI_BASEURL = 'https://api.openai.com/v1/chat/completions';
 
@@ -6,6 +7,7 @@ const getInstructions = (lang: string) => {
   return `Translate the following sets of auto-transcribed text to ${lang}, making it sound like natural spoken " +
       "language.  Please return the same number of lines in the translation as in the original.`
 }
+
 
 export const translateText = async (text: string, targetLanguage: string) => {
   const apiKey = await getOpenAiApiKeyFromLocalStorage();
@@ -41,7 +43,7 @@ export const translateText = async (text: string, targetLanguage: string) => {
       return data.error.message;
     }
 
-    return data.choices[0].message.content;
+    return formatResult(data.choices[0].message.content, text);
   } catch (error) {
     console.error('Error during translation:', error);
   }
