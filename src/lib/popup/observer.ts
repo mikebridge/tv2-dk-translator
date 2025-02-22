@@ -8,14 +8,20 @@
 //console.log("FOUND " + tmp);
 /* =============== START IMPORT WORKAROUNDS  ====================== */
 
+const CLEAR_TRANSLATION_TIMEOUT_MS = 5000;
+
 /* COPIED FROM events.ts **/
 const TRANSLATION_RESPONSE = "translationResponse";
 const TRANSLATION_REQUEST = "translationRequest";
+const CLEAR_TRANSLATION_REQUEST = "clearTranslationRequest";
+
+
 
 /* COPIED FROM messages.ts */
 
 interface TranslationRequestData {
   text: string
+  currentTime: number
 }
 
 export interface TranslationRequest {
@@ -23,9 +29,19 @@ export interface TranslationRequest {
   data: TranslationRequestData
 }
 
+interface ClearTranslationRequestData {
+  currentTime: number
+}
+
+export interface ClearTranslationRequest {
+  action: typeof CLEAR_TRANSLATION_REQUEST,
+  data: ClearTranslationRequestData
+}
+
 interface TranslationResponseData {
   text: string
   original: string
+  currentTime: number
 }
 
 export interface TranslationResponse {
@@ -33,15 +49,29 @@ export interface TranslationResponse {
   data: TranslationResponseData
 }
 
-export const createTranslationRequest = (text: string): TranslationRequest => ({
+export const createTranslationRequest = (text: string, currentTime: number): TranslationRequest => ({
   action: TRANSLATION_REQUEST,
   data: {
     text,
+    currentTime
   }
 })
 
-export const isTranslationResponse = (msg: any): msg is TranslationResponse => {
-  return msg && msg.action === TRANSLATION_RESPONSE;
+export const createClearTranslationRequest = (currentTime: number): ClearTranslationRequest => ({
+  action: CLEAR_TRANSLATION_REQUEST,
+  data: {
+    currentTime,
+  }
+})
+
+export const isTranslationResponse = (msg: unknown): msg is TranslationResponse => {
+  // return msg && msg.action === TRANSLATION_RESPONSE;
+  return !!msg && typeof msg === 'object' && 'action' in msg && msg['action'] === TRANSLATION_RESPONSE;
+}
+
+export const isClearTranslationRequest = (msg: unknown): msg is ClearTranslationRequest => {
+  // return msg && msg.action === CLEAR_TRANSLATION_REQUEST;
+  return !!msg && typeof msg === 'object' && 'action' in msg && msg['action'] === CLEAR_TRANSLATION_REQUEST;
 }
 
 /* =============== END IMPORT WORKAROUNDS  ====================== */
@@ -93,7 +123,15 @@ const createDualSubtitlesHTML = (translated: string, original: string) => {
   return html;
 }
 
-const displayTranslatedElement = (translated: string, original: string) =>  {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// let lastDisplayChange: number | undefined;
+
+/**
+ * Display the translated element on the page
+ * @param translated
+ * @param original
+ */
+const displayTranslatedElement = (translated: string, original: string, randomId: string) =>  {
   const translatedAsHtml = formatSubtitle(translated);
   const originalAsHtml = formatSubtitle(original);
 
@@ -104,29 +142,44 @@ const displayTranslatedElement = (translated: string, original: string) =>  {
     const subtitlesHTML = createDualSubtitlesHTML(translatedAsHtml, originalAsHtml);
 
     // Replace the content of the theoplayer-texttracks element
-    textTracksContainer.innerHTML = `<div id="dual-subtitles-container">${subtitlesHTML}</div>`;
-
+    textTracksContainer.innerHTML = `<div id="dual-subtitles-container" data-id="${randomId}">${subtitlesHTML}</div>`;
+    return randomId;
   } else {
     console.error("Could not find .theoplayer-texttracks element");
   }
 }
 
+// const clearTranslatedElement = () => {
+//   const textTracksContainer = document.querySelector('.theoplayer-texttracks');
+//   if (textTracksContainer) {
+//     console.log('setting innerHTML to empty');
+//     textTracksContainer.innerHTML = '';
+//   }
+// }
+
+/**
+ * clear the translated element
+ * @param randomId
+ * @param timeoutMs
+ */
+const clearAfter = (randomId: string, timeoutMs: number) => {
+  setTimeout(() => {
+    const container = document.querySelector(`#dual-subtitles-container[data-id="${randomId}"]`);
+    if (container) {
+      console.log(`clearing container ${randomId} after timeout`);
+      container.innerHTML = '';
+    }
+  }, timeoutMs);
+}
+
 const translationHandler = (response: unknown) => {
   console.log("translationHandler: Received translation from background script:");
   console.dir(response)
-  // const subtitleElement = document.querySelector('.theoplayer-ttml-texttrack-Dansk #r0');
-  //if (subtitleElement) {
     if (isTranslationResponse(response)) {
-      displayTranslatedElement(response.data.text, response.data.original);
-      // replace the text content of the subtitle element with the new text
-      // add an attribute to the span element to indicate that it has been translated
-      //const spanElement = subtitleElement.querySelector('span');
-      // if (spanElement) {
-      //   spanElement.setAttribute('data-translated', 'true');
-      //   spanElement.innerText = response.data.text;
-      // }
+      const randomId = Math.random().toString(36).substring(7);
+      displayTranslatedElement(response.data.text, response.data.original, randomId);
+      clearAfter(randomId, CLEAR_TRANSLATION_TIMEOUT_MS)
     }
-  //}
 
 }
 
@@ -157,7 +210,10 @@ export const toggleOriginalSubtitleVisibility = (show: boolean): void => {
   });
 };
 
-
+const getCurrentTime = () => {
+  const player = document.querySelector('video') as HTMLVideoElement;
+  return player?.currentTime;
+}
 
 /**
  * Attach a listener that listens for new subtitles added to the dom
@@ -186,12 +242,22 @@ export const connectToTextTrack = () => {
         // console.dir(mutation);
         const addedText = findAddedText(subtitleElement, mutation);
 
-        if (addedText && lastSubtitle !== addedText) { // this is different from the last subtitle
-          lastSubtitle = addedText;
-          console.log("Sending For Translation:", addedText);
-          const msg = createTranslationRequest(addedText);
-          console.dir(msg)
-          chrome.runtime.sendMessage(msg, translationHandler);
+        if (addedText) {
+          if (lastSubtitle !== addedText) { // this is different from the last subtitle
+            lastSubtitle = addedText;
+            console.log("Sending For Translation:", addedText);
+            const msg = createTranslationRequest(addedText, getCurrentTime());
+            console.dir(msg)
+            chrome.runtime.sendMessage(msg, translationHandler);
+          } else {
+            console.log('ignoring duplicate');
+          }
+        } else {
+          // do we need to remove duplicate "clear" messages?
+          console.log('text is empty...')
+          chrome.runtime.sendMessage(createClearTranslationRequest(getCurrentTime())).catch(console.error)
+          // todo: need to add a timeout for this...
+          // clearTranslatedElement();
         }
       });
 

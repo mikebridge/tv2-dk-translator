@@ -14,9 +14,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
             console.log("background: TRANSLATION LISTENER RECEIVED TRANSLATION REQUEST");
             console.log(message);
             const original = message.data.text;
+            const currentTime = message.data.currentTime;
 
             translateText(original, 'en').then((translatedText) => {
-                const response = createTranslationResponse(translatedText || undefined, original);
+                const response = createTranslationResponse(translatedText || undefined, original, currentTime);
                 console.log("background: TRANSLATION LISTENER SENDING TRANSLATION!");
                 console.dir(response);
                 sendResponse(response);

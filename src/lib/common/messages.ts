@@ -6,7 +6,8 @@ import {
   SET_CHATGPT_API_KEY_REQUEST,
   SET_KEY_VALUE_SYNC_REQUEST,
   TRANSLATION_REQUEST,
-  TRANSLATION_RESPONSE
+  TRANSLATION_RESPONSE,
+  CLEAR_TRANSLATION_REQUEST
 } from "./events";
 
 /** GENERAL */
@@ -31,6 +32,7 @@ export const isActionMessage = <T extends Action>(
 
 interface TranslationRequestData {
   text: string
+  currentTime: number
 }
 
 export interface TranslationRequest extends Event<TranslationRequestData> {
@@ -38,21 +40,42 @@ export interface TranslationRequest extends Event<TranslationRequestData> {
   data: TranslationRequestData
 }
 
+interface ClearTranslationRequestData {
+  currentTime: number
+}
+
+export interface ClearTranslationRequest extends Event<ClearTranslationRequestData> {
+  action: typeof CLEAR_TRANSLATION_REQUEST,
+  data: ClearTranslationRequestData
+}
+
 export const isTranslationRequest = (msg: unknown): msg is TranslationRequest => {
   return isActionMessage<TranslationRequest>(msg, TRANSLATION_REQUEST);
 };
 
-export const createTranslationRequest = (text: string): TranslationRequest => ({
+export const isClearTranslationRequest = (msg: unknown): msg is ClearTranslationRequest => {
+  return isActionMessage<ClearTranslationRequest>(msg, CLEAR_TRANSLATION_REQUEST);
+};
+
+export const createTranslationRequest = (text: string, currentTime: number): TranslationRequest => ({
   action: TRANSLATION_REQUEST,
   data: {
     text,
+    currentTime
   }
 })
 
+export const createClearTranslationRequest = (currentTime: number): ClearTranslationRequest => ({
+  action: CLEAR_TRANSLATION_REQUEST,
+  data: {
+    currentTime
+  }
+})
 
 interface TranslationResponseData {
   text: string
   original: string
+  currentTime: number
 }
 
 export interface TranslationResponse extends Event<TranslationResponseData> {
@@ -64,16 +87,12 @@ export const isTranslationResponse = (msg: unknown): msg is TranslationResponse 
   return isActionMessage<TranslationResponse>(msg, TRANSLATION_RESPONSE);
 };
 
-export interface SubtitleUpdated {
-  action: "subtitleUpdated",
-  data: { text: string }
-}
-
-export const createTranslationResponse = (text: string, original: string): TranslationResponse => ({
+export const createTranslationResponse = (text: string, original: string, currentTime: number): TranslationResponse => ({
   action: TRANSLATION_RESPONSE,
   data: {
     text,
-    original
+    original,
+    currentTime
   }
 })
 
