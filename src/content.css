@@ -3,6 +3,13 @@
     z-index: 6 !important; /* Ensure our subtitles are on top. Use !important if needed to override existing styles */
 }
 
+/**
+ * to turn the subtitles off completely, add "hide-ro" to the body tag.
+ */
+.hide-r0 [class^="theoplayer-ttml-texttrack"] #r0 {
+    display: none !important;
+}
+
 /* Ensure the line height is inherited to respect the line breaks */
 p {
     line-height: inherit !important;

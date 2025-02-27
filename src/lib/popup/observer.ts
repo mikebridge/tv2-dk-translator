@@ -148,6 +148,20 @@ const displayTranslatedElement = (translated: string, original: string, randomId
   }
 }
 
+const clearTranslatedElementWithId = (randomId: string) => {
+  const container = document.querySelector(`#dual-subtitles-container[data-id="${randomId}"]`);
+  if (container) {
+    container.innerHTML = '';
+  }
+}
+
+const clearAnyTranslatedElement = () => {
+  const container = document.querySelector(`#dual-subtitles-container`);
+  if (container) {
+    container.innerHTML = '';
+  }
+}
+
 /**
  * clear the translated element
  * @param randomId
@@ -155,11 +169,7 @@ const displayTranslatedElement = (translated: string, original: string, randomId
  */
 const clearAfter = (randomId: string, timeoutMs: number) => {
   setTimeout(() => {
-    const container = document.querySelector(`#dual-subtitles-container[data-id="${randomId}"]`);
-    if (container) {
-      console.log(`clearing container ${randomId} after timeout`);
-      container.innerHTML = '';
-    }
+    clearTranslatedElementWithId(randomId);
   }, timeoutMs);
 }
 
@@ -193,15 +203,15 @@ const findAddedText = (el: Element, mutation: MutationRecord) => {
   }
 }
 
-export const toggleOriginalSubtitleVisibility = (show: boolean): void => {
-  // Find all elements with id "r0" that are descendants of elements with class "theoplayer-texttracks"
-  const r0Elements = document.querySelectorAll('.theoplayer-texttracks #r0');
-
-  r0Elements.forEach(element => {
-    // Set the display style based on the 'show' parameter
-    (element as HTMLElement).style.display = show ? 'flex' : 'none'; // Or 'block' depending on the original display
-  });
-};
+// export const toggleOriginalSubtitleVisibility = (show: boolean): void => {
+//   // Find all elements with id "r0" that are descendants of elements with class "theoplayer-texttracks"
+//   const r0Elements = document.querySelectorAll('.theoplayer-texttracks #r0');
+//
+//   r0Elements.forEach(element => {
+//     // Set the display style based on the 'show' parameter
+//     (element as HTMLElement).style.display = show ? 'flex' : 'none'; // Or 'block' depending on the original display
+//   });
+// };
 
 const getCurrentTime = () => {
   const player = document.querySelector('video') as HTMLVideoElement;
@@ -209,6 +219,14 @@ const getCurrentTime = () => {
 }
 
 const storageCache: Record<string, unknown> = {};
+
+export const toggleOriginalSubtitleVisibility = (visible: boolean) => {
+  if (visible) {
+    document.body.classList.remove('hide-r0');
+  } else {
+    document.body.classList.add('hide-r0');
+  }
+}
 
 /**
  * This seems async.  So let's store them locally
@@ -218,7 +236,7 @@ export const watchSyncStorage = () => {
   chrome.storage.sync.get(null, (items) => {
     Object.assign(storageCache, items);
   });
-  // watch for changes
+  // sync changes
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'sync') {
       for (const [key, { newValue }] of Object.entries(changes)) {
@@ -226,6 +244,19 @@ export const watchSyncStorage = () => {
       }
     }
   });
+
+  toggleOriginalSubtitleVisibility(storageCache['active'] === false);
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'sync') {
+      const isActive = changes['active']?.newValue !== false
+      toggleOriginalSubtitleVisibility(!isActive)
+      if (!isActive) {
+        clearAnyTranslatedElement()
+      }
+    }
+  });
+
+
 }
 
 /**
@@ -246,16 +277,6 @@ export const connectToTextTrack = () => {
     const subtitleElement = document.querySelector('[class^="theoplayer-ttml-texttrack"] #r0');
     //const subtitleElement = document.querySelector('.theoplayer-ttml-texttrack-Dansk #r0');
     if (subtitleElement) {
-      // TODO: extract this
-      // hide the element
-      const originalStyle = subtitleElement.getAttribute('style');
-
-      // Modify the display property
-      let newStyle = originalStyle;
-      if (newStyle?.includes('display: flex')) {
-        newStyle = newStyle.replace('display: flex', 'display: none');
-        subtitleElement.setAttribute('style', newStyle);
-      }
 
       // now translate it
       mutationsList.forEach(async (mutation) => {
