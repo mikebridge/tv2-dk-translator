@@ -28,7 +28,7 @@ br {
 }
 
 /* Styles for the dual subtitle container */
-.theoplayer-ttml-texttrack-Dual {
+.x-theoplayer-ttml-texttrack-Dual {
     width: 100%;
     text-align: center;
     pointer-events: none; /* Prevent subtitles from interfering with video controls */
@@ -36,27 +36,24 @@ br {
 }
 
 /* Styles for each language container */
-#english {
-    background-color: rgba(0, 0, 0, 0.40); /* Light blue background */
+#english,
+#danish {
     margin: 0.25em 0;
+    padding: 0.25em 0.5em;
+    border-radius: 0.2em;
+    display: inline-block; /* This will make the background wrap around all lines */
+}
+
+/* Different background colors for English and Danish */
+#english {
+    background-color: rgba(0, 0, 255, 0.25); /* Light blue background */
 }
 
 #danish {
-    background-color: rgba(0, 0, 0, 0.40); /* Light blue background */
-    margin: 0.25em 0;
+    background-color: rgba(0, 255, 0, 0.25); /* Light green background */
 }
 
 /* Style for the text inside the subtitles */
-/*#english span,*/
-/*#danish span {*/
-/*    color: rgb(255, 255, 255);*/
-/*    background-color: rgba(0, 0, 0, 0.25);*/
-/*    padding: 0.25em 0.5em;*/
-/*    border-radius: 0.2em;*/
-/*    box-decoration-break: clone;*/
-/*    line-height: normal !important;*/
-/*}*/
-
 #english span,
 #danish span {
     color: rgb(255, 255, 255);

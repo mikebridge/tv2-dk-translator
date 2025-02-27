@@ -99,21 +99,25 @@ const formatSubtitle = (text: string) => {
 }
 
 // create an html element based on this
+// TODO: let's move the stuff from .css to here so that it can be controlled programmatically.
 const createDualSubtitlesHTML = (translated: string, original: string) => {
   const html = `
         <div classname="x-theoplayer-ttml-texttrack-Dual">
           <div id="english">
             <p style="font-family: inherit; color: inherit; text-align: center; padding: 0px; margin: 0px; line-height: inherit;">
-              <span style="color: rgb(255, 255, 0); background-color: rgba(0, 0, 0, 0.25); padding-right: 0.5em; padding-left: 0.5em;">
+            <span style="color: rgb(255, 255, 0); padding-right: 0.5em; padding-left: 0.5em;">
+<!--              <span style="color: rgb(255, 255, 0); background-color: rgba(0, 0, 0, 0.25); padding-right: 0.5em; padding-left: 0.5em;">-->
                 ${translated}
               </span>
             </p>
           </div>
           <div id="danish">
             <p style="font-family: inherit; color: inherit; text-align: center; padding: 0px; margin: 0px; line-height: inherit;">
-              <span style="color: rgb(255, 255, 255); background-color: rgba(0, 0, 0, 0.25); padding-right: 0.5em; padding-left: 0.5em;">
+              <span style="color: rgb(255, 255, 255); padding-right: 0.5em; padding-left: 0.5em;">
+
+<!--              <span style="color: rgb(255, 255, 255); background-color: rgba(0, 0, 0, 0.25); padding-right: 0.5em; padding-left: 0.5em;">-->
                 ${original}
-              </span>
+              </span style="color: rgb(255, 255, 255); background-color: rgba(0, 0, 0, 0.25); padding-right: 0.5em; padding-left: 0.5em;">
             </p>
           </div>
         </div>
