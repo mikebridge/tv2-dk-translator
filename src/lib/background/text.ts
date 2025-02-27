@@ -43,6 +43,6 @@ export const formatResult = (translation: string, original: string) => {
     // TODO: we could split based on '-', then put the result into redoLineLength
     return translationWithoutBreaks.replace(/ -/g, '\n-');
   }
-  
+
   return redoLineLength(translation, original);
 }

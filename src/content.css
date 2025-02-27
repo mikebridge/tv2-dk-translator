@@ -28,7 +28,7 @@ br {
 }
 
 /* Styles for the dual subtitle container */
-.theoplayer-ttml-texttrack-Dual {
+.x-theoplayer-ttml-texttrack-Dual {
     width: 100%;
     text-align: center;
     pointer-events: none; /* Prevent subtitles from interfering with video controls */

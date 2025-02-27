@@ -1,12 +1,11 @@
-// THe common files are being excluded from the bundle for some reason.
-// until I can figure that out, they are copied here.
-// import {TRANSLATION_REQUEST, TRANSLATION_RESPONSE} from "../common/events";
-//import {TRANSLATION_REQUEST, TRANSLATION_RESPONSE} from "../common/events";
-
-//import { createTranslationRequest, isTranslationResponse } from "../common/messages";
-
-//console.log("FOUND " + tmp);
 /* =============== START IMPORT WORKAROUNDS  ====================== */
+
+// import { getValueFromSyncStorage } from "../background/storageListener";
+// export const getValueFromSyncStorage = (key: string) => new Promise<string | undefined>((resolve) => {
+//   chrome.storage.sync.get(key, (response) => {
+//     resolve(response[key]);
+//   });
+// });
 
 const CLEAR_TRANSLATION_TIMEOUT_MS = 5000;
 
@@ -102,7 +101,7 @@ const formatSubtitle = (text: string) => {
 // create an html element based on this
 const createDualSubtitlesHTML = (translated: string, original: string) => {
   const html = `
-        <div classname="theoplayer-ttml-texttrack-Dual">
+        <div classname="x-theoplayer-ttml-texttrack-Dual">
           <div id="english">
             <p style="font-family: inherit; color: inherit; text-align: center; padding: 0px; margin: 0px; line-height: inherit;">
               <span style="color: rgb(255, 255, 0); background-color: rgba(0, 0, 0, 0.25); padding-right: 0.5em; padding-left: 0.5em;">
@@ -121,9 +120,6 @@ const createDualSubtitlesHTML = (translated: string, original: string) => {
     `;
   return html;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// let lastDisplayChange: number | undefined;
 
 /**
  * Display the translated element on the page
@@ -166,15 +162,17 @@ const clearAfter = (randomId: string, timeoutMs: number) => {
 const translationHandler = (response: unknown) => {
   console.log("translationHandler: Received translation from background script:");
   console.dir(response)
-    if (isTranslationResponse(response)) {
-      const randomId = Math.random().toString(36).substring(7);
-      displayTranslatedElement(response.data.text, response.data.original, randomId);
-      clearAfter(randomId, CLEAR_TRANSLATION_TIMEOUT_MS)
-    }
+
+  if (isTranslationResponse(response)) {
+    const randomId = Math.random().toString(36).substring(7);
+    displayTranslatedElement(response.data.text, response.data.original, randomId);
+    clearAfter(randomId, CLEAR_TRANSLATION_TIMEOUT_MS)
+  }
 
 }
 
 const findAddedText = (el: Element, mutation: MutationRecord) => {
+  console.log('mutation.type=', mutation.type);
   if (mutation.type === 'childList') {
     if (mutation.addedNodes.length > 0) { // we're adding something.
       // find the span element that doesn't have the data-translated attribute
@@ -206,6 +204,26 @@ const getCurrentTime = () => {
   return player?.currentTime;
 }
 
+const storageCache: Record<string, unknown> = {};
+
+/**
+ * This seems async.  So let's store them locally
+ */
+export const watchSyncStorage = () => {
+  // initialize the cache
+  chrome.storage.sync.get(null, (items) => {
+    Object.assign(storageCache, items);
+  });
+  // watch for changes
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'sync') {
+      for (const [key, { newValue }] of Object.entries(changes)) {
+        storageCache[key] = newValue;
+      }
+    }
+  });
+}
+
 /**
  * Attach a listener that listens for new subtitles added to the dom
  */
@@ -213,9 +231,16 @@ export const connectToTextTrack = () => {
   let lastSubtitle = '';
   // find the element that is below .theoplayer-ttml-texttrack-Dansk and has an id of r0
 
+  const observer = new MutationObserver(  (mutationsList) => {
 
-  const observer = new MutationObserver((mutationsList) => {
-    const subtitleElement = document.querySelector('.theoplayer-ttml-texttrack-Dansk #r0');
+    if (storageCache['active'] === false) { // undefined is true
+      return;
+    }
+
+    // sometimes this is .theoplayer-ttml-texttrack- and sometimes .theoplayer-ttml-texttrack-Dansk
+
+    const subtitleElement = document.querySelector('[class^="theoplayer-ttml-texttrack"] #r0');
+    //const subtitleElement = document.querySelector('.theoplayer-ttml-texttrack-Dansk #r0');
     if (subtitleElement) {
       // TODO: extract this
       // hide the element

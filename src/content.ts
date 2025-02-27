@@ -1,5 +1,7 @@
-import {connectToTextTrack, toggleOriginalSubtitleVisibility} from "./lib/popup/observer";
+import {watchSyncStorage, connectToTextTrack, toggleOriginalSubtitleVisibility} from "./lib/popup/observer";
 import "./content.css";
+
+watchSyncStorage();
 
 connectToTextTrack();
 

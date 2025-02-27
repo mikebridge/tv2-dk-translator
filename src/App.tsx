@@ -21,7 +21,7 @@ function App() {
               {isActiveLoaded &&
               <div className="flex items-center justify-between">
                 <label htmlFor="toggle" className="text-lg font-medium text-gray-700">Active:</label>
-                <Toggle initialValue={active || false} onToggle={setActive}/>
+                <Toggle initialValue={active !== false} onToggle={setActive}/>
               </div>
               }
               {apiKey !== undefined && (
