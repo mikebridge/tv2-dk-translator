@@ -14,7 +14,7 @@ export const translateText = async (text: string, targetLanguage: string) => {
   const apiKey = await getOpenAiApiKeyFromLocalStorage();
   if (!apiKey) {
     console.warn("api key is not set, not calling api")
-    return formatResult("[ERROR: OpenAI API Key is not set]", text);
+    return formatResult(NO_KEY_ERROR, text);
   }
   const body = JSON.stringify({
     model: 'gpt-4o',
