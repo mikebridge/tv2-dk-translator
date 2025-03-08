@@ -2,6 +2,7 @@ import {getOpenAiApiKeyFromLocalStorage} from "./storageListener";
 import {formatResult} from "./text";
 
 const OPENAPI_BASEURL = 'https://api.openai.com/v1/chat/completions';
+const NO_KEY_ERROR = "[ERROR: OpenAI API Key is not set]"
 
 const getInstructions = (lang: string) => {
   return `Translate the following sets of auto-transcribed text to ${lang}, making it sound like natural spoken " +
@@ -13,7 +14,7 @@ export const translateText = async (text: string, targetLanguage: string) => {
   const apiKey = await getOpenAiApiKeyFromLocalStorage();
   if (!apiKey) {
     console.warn("api key is not set, not calling api")
-    return;
+    return formatResult("[ERROR: OpenAI API Key is not set]", text);
   }
   const body = JSON.stringify({
     model: 'gpt-4o',
@@ -42,8 +43,8 @@ export const translateText = async (text: string, targetLanguage: string) => {
     if (data.error) {
       return data.error.message;
     }
-
-    return formatResult(data.choices[0].message.content, text);
+    const result = data.choices[0].message.content || '[ERROR: No response from OpenAI]'
+    return formatResult(result, text);
   } catch (error) {
     console.error('Error during translation:', error);
   }
